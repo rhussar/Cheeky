@@ -208,15 +208,18 @@ app.patch('/api/orders/:id/status', (req, res) => {
 // Search restaurants
 app.get('/api/search', (req, res) => {
   const { query } = req.query;
-  if (!query) {
-    return res.json(restaurants);
-  }
-  
-  const results = restaurants.filter(r => 
-    r.name.toLowerCase().includes(query.toLowerCase()) ||
-    r.cuisine.toLowerCase().includes(query.toLowerCase())
-  );
-  
+  if (!query) return res.json(restaurants);
+  const lq = query.toLowerCase();
+  const results = restaurants.filter(r => {
+    const matchesRestaurant = r.name.toLowerCase().includes(lq) || r.cuisine.toLowerCase().includes(lq);
+    const items = menuItems[r.id] || [];
+    const matchesMenu = items.some(item =>
+      item.name.toLowerCase().includes(lq) ||
+      item.description.toLowerCase().includes(lq) ||
+      item.category.toLowerCase().includes(lq)
+    );
+    return matchesRestaurant || matchesMenu;
+  });
   res.json(results);
 });
 
